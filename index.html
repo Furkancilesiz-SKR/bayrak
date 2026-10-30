@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bayrak</title>
+<style>
+  :root { --red:#e30a17; --bg:#0b0b0d; --fg:#f4f4f5; }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; min-height:100vh; display:grid; place-items:center;
+    background:radial-gradient(circle at 50% 40%, #2a0407 0%, var(--bg) 65%);
+    color:var(--fg); font-family:system-ui, "Segoe UI", sans-serif;
+  }
+  main { text-align:center; padding:24px; }
+  h1 { font-size:clamp(1.6rem, 5vw, 2.4rem); margin:0 0 8px; letter-spacing:.02em; }
+  p  { margin:0 0 28px; color:#a1a1aa; }
+  button {
+    font:inherit; font-size:1.15rem; font-weight:600; color:#fff;
+    background:var(--red); border:0; border-radius:14px;
+    padding:16px 40px; cursor:pointer;
+    box-shadow:0 8px 28px rgba(227,10,23,.35);
+    transition:transform .12s ease, box-shadow .12s ease, opacity .2s;
+  }
+  button:hover  { transform:translateY(-2px); box-shadow:0 12px 34px rgba(227,10,23,.5); }
+  button:active { transform:translateY(0); }
+  button:disabled { opacity:.6; cursor:default; }
+  #durum { margin-top:22px; min-height:1.4em; font-size:.95rem; color:#a1a1aa; }
+  #durum.hata { color:#fca5a5; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Bayrak Animasyonu</h1>
+  <p>Butona bas, animasyon yeni bir pencerede açılsın.</p>
+  <button id="btn" type="button">▶ Başlat</button>
+  <div id="durum" role="status" aria-live="polite"></div>
+</main>
+
+<script>
+  const btn = document.getElementById("btn");
+  const durum = document.getElementById("durum");
+
+  btn.addEventListener("click", async () => {
+    btn.disabled = true;
+    durum.className = "";
+    durum.textContent = "Açılıyor…";
+    try {
+      const r = await fetch("/calistir", { method: "POST" });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.hata || "Bilinmeyen hata");
+      durum.textContent = "Pencere açıldı. (Kapatmak için ESC)";
+    } catch (e) {
+      durum.className = "hata";
+      durum.textContent = "Açılamadı: " + e.message +
+        " — sayfayı sunucu.py üzerinden açtığından emin ol.";
+    } finally {
+      setTimeout(() => (btn.disabled = false), 1500);
+    }
+  });
+</script>
+</body>
+</html>
